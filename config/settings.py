@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",  # needed for logout/blacklist
+    "aaa",
 ]
 
 MIDDLEWARE = [
@@ -123,5 +127,54 @@ STATIC_URL = 'static/'
 MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    },
+}
+
+
+AUTH_USER_MODEL = "aaa.User"
+
+AUTHENTICATION_BACKENDS = [
+    "aaa.backends.EmailOrPhoneBackend",          # login by email OR phone
+    "django.contrib.auth.backends.ModelBackend", # keep for the admin
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+
+# LocMem is fine for dev; use Redis/Memcached in production.
+CACHES = {
+    "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+}
+
+# settings.py
+AAA = {
+    # --- One-Time-Password behaviour ---
+    "OTP_LENGTH": 6,                 # digits per code
+    "OTP_TTL_SECONDS": 300,          # code lifetime (5 min)
+    "OTP_MAX_ATTEMPTS": 5,           # wrong guesses before a code is burned
+    "OTP_CACHE_ALIAS": "default",    # which CACHES alias to store codes in
+    "OTP_SENDER": "aaa.otp.default_otp_sender",  # dotted path; see below
+
+    # --- Registration / login policy ---
+    "REQUIRE_VERIFICATION": False,   # require OTP before an account is active
+    "REQUIRE_PASSWORD": True,        # require a password at registration
+
+    # --- Google ---
+    "GOOGLE_CLIENT_ID": "",
+    "GOOGLE_CLIENT_SECRET": "",
+    "GOOGLE_REDIRECT_URI": "",
+
+    # --- GitHub ---
+    "GITHUB_CLIENT_ID": "",
+    "GITHUB_CLIENT_SECRET": "",
+    "GITHUB_REDIRECT_URI": "",
+
+    # --- Provider registry (slug -> dotted path) ---
+    "OAUTH_PROVIDERS": {
+        "google": "aaa.oauth.google.GoogleOAuthProvider",
+        "github": "aaa.oauth.github.GitHubOAuthProvider",
     },
 }
