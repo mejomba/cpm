@@ -178,3 +178,6 @@ AAA = {
         "github": "aaa.oauth.github.GitHubOAuthProvider",
     },
 }
+
+MAX_NUMBER_LENGTH = 25
+DECIMAL_POINT = 8
