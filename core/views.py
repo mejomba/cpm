@@ -1,3 +1,6 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def home(request, *args, **kwargs):
+    "return spa page from _template/core/spa.html"
+    return render(request, "core/spa.html", context={})
