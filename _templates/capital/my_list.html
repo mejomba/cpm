@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DataTable حرفه‌ای با جاوااسکریپت خام</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- Bootstrap Icons -->
+{% extends "core/base.html" %}
+
+{% block "extra_css" %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
     <!-- Flatpickr برای انتخاب تاریخ -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
@@ -89,9 +83,7 @@
         .columns-dropdown.show {
             display: block;
         }
-        .columns-dropdown .form-check {
-            padding: 4px 0;
-        }
+        
         .columns-dropdown .form-check-label {
             font-size: 0.9rem;
             cursor: pointer;
@@ -231,6 +223,7 @@
             border-top: 1px solid #e9ecef;
             flex-wrap: wrap;
             gap: 10px;
+            direction: rtl;
         }
         .datatable-footer .aggregations {
             display: flex;
@@ -301,18 +294,18 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock "extra_css" %}
 
-<div class="container py-4">
-    <h2 class="mb-4">📊 DataTable حرفه‌ای</h2>
+{% block "content" %}
+<h2 class="mb-4">📊 DataTable حرفه‌ای</h2>
 
-    <!-- ========== نمونه DataTable ========== -->
-    <div id="myDataTable" class="datatable-wrapper"></div>
-</div>
+<!-- ========== نمونه DataTable ========== -->
+<div id="myDataTable" class="datatable-wrapper"></div>
+{% endblock %}
 
 <!-- ========== اسکریپت‌ها ========== -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> -->
+ {% block "extra_js" %}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
@@ -1234,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         columns: [
             { field: 'id', title: 'شناسه', type: 'number', sortable: true, searchable: true, visible: true },
             { field: 'asset__title', title: 'دارایی', type: 'string', sortable: true, searchable: true, visible: true },
-            { field: 'quantity', title: 'تعداد', type: 'string', sortable: true, searchable: true, visible: true },
+            { field: 'quantity', title: 'تعداد', type: 'number', sortable: true, searchable: true, visible: true },
             { field: 'price_sar_be_sar', title: 'قیمت سر به سر', type: 'number', sortable: true, searchable: true, visible: true, aggregate: true },
             { field: 'price_buy', title: 'قیمت خرید', type: 'number', sortable: true, searchable: true, visible: true, aggregate: true },
             { field: 'created_at', title: 'تاریخ ایجاد', type: 'date', sortable: true, searchable: true, visible: true },
@@ -1327,5 +1320,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-</body>
-</html>
+{% endblock %}

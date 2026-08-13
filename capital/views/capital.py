@@ -72,10 +72,11 @@ def datatable_api(request):
 def capital_detail_api(request, id):
     obj = UserAsset.objects.get(pk=id)
     data = {
-        "id": obj.pk,
-        "name": obj.asset.title,
-        "created_at": obj.jcreated_at,
-        "price": obj.price_buy
+        "شناسه": obj.pk,
+        "عنوان": obj.asset.title,
+        "زمان ایجاد": obj.jcreated_at,
+        "قیمت سر به سر": round(obj.price_sar_be_sar, obj.asset.max_decimal_point),
+        "قیمت خرید": round(obj.price_buy, obj.asset.max_decimal_point)
     }
 
     return JsonResponse(data)

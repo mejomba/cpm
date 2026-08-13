@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from .utils import Utils
 
 
 class ActiveObjectsManager(models.Manager):
@@ -39,11 +40,11 @@ class BaseModel(models.Model):
 
     @property
     def jcreated_at(self):
-        return 'return jalali created date...'
+        return Utils.to_jalali(self.created_at)
 
     @property
     def jupdate_at(self):
-        return 'return jalali update date...'
+        return Utils.to_jalali(self.updated_at)
     
 
 class BaseModelWithUser(BaseModel):
