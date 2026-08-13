@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DataTable حرفه‌ای با جاوااسکریپت خام</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Flatpickr برای انتخاب تاریخ -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <style>
+        /* ========== استایل‌های DataTable ========== */
+        .datatable-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        /* هدر ابزارها */
+        .datatable-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .datatable-toolbar .left-tools {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .datatable-toolbar .right-tools {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* جستجوی سراسری */
+        .global-search {
+            position: relative;
+            min-width: 250px;
+        }
+        .global-search input {
+            padding-right: 35px;
+            border-radius: 20px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s;
+        }
+        .global-search input:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+        }
+        .global-search .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        /* دکمه تنظیمات ستون‌ها */
+        .btn-columns-settings {
+            position: relative;
+        }
+        .columns-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 12px;
+            min-width: 220px;
+            z-index: 1000;
+            display: none;
+            margin-top: 8px;
+        }
+        .columns-dropdown.show {
+            display: block;
+        }
+        .columns-dropdown .form-check {
+            padding: 4px 0;
+        }
+        .columns-dropdown .form-check-label {
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* جدول */
+        .datatable-container {
+            overflow-x: auto;
+            position: relative;
+        }
+        .datatable-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+        .datatable-container thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .datatable-container thead th {
+            padding: 12px 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #495057;
+            white-space: nowrap;
+            position: relative;
+            cursor: default;
+            user-select: none;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .datatable-container thead th .header-content {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .datatable-container thead th .column-search {
+            margin-top: 6px;
+        }
+        .datatable-container thead th .column-search input {
+            width: 100%;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            transition: border-color 0.2s;
+        }
+        .datatable-container thead th .column-search input:focus {
+            border-color: #0d6efd;
+            outline: none;
+        }
+        .datatable-container thead th .sort-icon {
+            cursor: pointer;
+            color: #adb5bd;
+            transition: color 0.2s;
+        }
+        .datatable-container thead th .sort-icon:hover {
+            color: #0d6efd;
+        }
+        .datatable-container thead th .sort-icon.active {
+            color: #0d6efd;
+        }
+
+        /* درگ برای جابجایی ستون‌ها */
+        .datatable-container thead th.draggable {
+            cursor: grab;
+        }
+        .datatable-container thead th.draggable:active {
+            cursor: grabbing;
+        }
+        .datatable-container thead th.drag-over {
+            border-left: 3px solid #0d6efd;
+            border-right: 3px solid #0d6efd;
+            background: #e7f1ff;
+        }
+        .datatable-container thead th.dragging {
+            opacity: 0.5;
+            background: #e9ecef;
+        }
+
+        /* سلول‌های جدول */
+        .datatable-container tbody td {
+            padding: 10px 10px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f3f5;
+            font-size: 0.9rem;
+        }
+        .datatable-container tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .datatable-container tbody tr.row-expanded {
+            background-color: #f0f7ff;
+        }
+
+        /* دکمه + برای باز کردن ردیف */
+        .btn-expand-row {
+            background: none;
+            border: none;
+            color: #0d6efd;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+            padding: 0 4px;
+        }
+        .btn-expand-row:hover {
+            transform: scale(1.2);
+        }
+        .btn-expand-row.expanded {
+            transform: rotate(45deg);
+        }
+
+        /* ردیف باز شده (آکاردیون) */
+        .row-detail {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .row-detail.show {
+            display: table-row;
+        }
+        .row-detail .detail-content {
+            padding: 10px 20px;
+        }
+        .row-detail .detail-loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        /* فوتر جدول - عملیات تجمیعی */
+        .datatable-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            margin-top: 15px;
+            border-top: 1px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .datatable-footer .aggregations {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .datatable-footer .aggregation-item {
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        .datatable-footer .aggregation-item strong {
+            color: #212529;
+        }
+        .datatable-footer .pagination {
+            margin: 0;
+        }
+
+        /* وضعیت خالی */
+        .datatable-empty {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .datatable-empty i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 10px;
+            color: #dee2e6;
+        }
+
+        /* لودینگ */
+        .datatable-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            border-radius: 8px;
+        }
+        .datatable-loading.hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .datatable-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .datatable-toolbar .left-tools {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .global-search {
+                min-width: auto;
+            }
+            .datatable-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .datatable-footer .pagination {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <h2 class="mb-4">📊 DataTable حرفه‌ای</h2>
+
+    <!-- ========== نمونه DataTable ========== -->
+    <div id="myDataTable" class="datatable-wrapper"></div>
+</div>
+
+<!-- ========== اسکریپت‌ها ========== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+// ================================================================
+//  کلاس اصلی DataTable
+// ================================================================
+class DataTable {
+    constructor(options) {
+        // ===== کانفیگ اولیه =====
+        this.config = {
+            // آدرس API برای دریافت داده‌ها (جنگو)
+            apiUrl: options.apiUrl || '/api/datatable/',
+            
+            // ستون‌ها: { field, title, type, visible, width, sortable, searchable, aggregate }
+            columns: options.columns || [],
+            
+            // ستون‌هایی که در ابتدا نمایش داده می‌شوند
+            visibleColumns: options.visibleColumns || [],
+            
+            // ترتیب ستون‌ها (آرایه‌ای از field ها)
+            columnOrder: options.columnOrder || [],
+            
+            // تعداد رکورد در هر صفحه
+            pageSize: options.pageSize || 10,
+            
+            // کلید اصلی جدول
+            primaryKey: options.primaryKey || 'id',
+            
+            // قالب‌های رندر سفارشی برای سلول‌ها
+            cellRenderers: options.cellRenderers || {},
+            
+            // توابع برای رندر جزئیات ردیف
+            detailRenderer: options.detailRenderer || null,
+            detailApiUrl: options.detailApiUrl || null,
+            
+            // عملیات تجمیعی
+            aggregations: options.aggregations || ['sum', 'avg'],
+            
+            // ELement جهت رندر
+            container: options.container || '#myDataTable',
+            
+            // ترجمه‌ها
+            translations: {
+                search: 'جستجو...',
+                noData: 'هیچ داده‌ای یافت نشد',
+                loading: 'در حال بارگذاری...',
+                showing: 'نمایش',
+                of: 'از',
+                rows: 'ردیف',
+                allColumns: 'همه ستون‌ها',
+                showColumns: 'نمایش ستون‌ها',
+                sum: 'جمع',
+                avg: 'میانگین',
+                count: 'تعداد',
+                expand: 'باز کردن جزئیات',
+                collapse: 'بستن جزئیات'
+            },
+            ...options.translations
+        };
+
+        // وضعیت داخلی
+        this.state = {
+            data: [],                // داده‌های فعلی
+            filteredData: [],        // داده‌های پس از فیلتر
+            currentPage: 1,
+            totalPages: 0,
+            totalRows: 0,
+            loading: false,
+            sortField: null,
+            sortDirection: 'asc',
+            globalSearch: '',
+            columnFilters: {},       // { field: value }
+            visibleColumns: this.config.visibleColumns.length > 0 ? 
+                           this.config.visibleColumns : 
+                           this.config.columns.map(c => c.field),
+            columnOrder: this.config.columnOrder.length > 0 ?
+                         this.config.columnOrder :
+                         this.config.columns.map(c => c.field),
+            expandedRows: new Set(),
+            detailData: {},          // کش برای داده‌های جزئیات
+            columnSearches: {},      // وضعیت جستجوی هر ستون
+        };
+
+        // عناصر DOM
+        this.container = typeof this.config.container === 'string' ?
+                        document.querySelector(this.config.container) :
+                        this.config.container;
+
+        // آبجکت برای رفرنس به خود
+        this._instance = this;
+
+        // مقداردهی اولیه
+        this.init();
+    }
+
+    // ============================================================
+    //  مقداردهی اولیه
+    // ============================================================
+    init() {
+        this.render();
+        this.loadData();
+        this.setupEventListeners();
+    }
+
+    // ============================================================
+    //  رندر UI
+    // ============================================================
+    render() {
+        if (!this.container) return;
+
+        // ساختار HTML
+        this.container.innerHTML = `
+            <!-- تولبار -->
+            <div class="datatable-toolbar">
+                <div class="left-tools">
+                    <div class="global-search">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="form-control global-search-input" 
+                               placeholder="${this.config.translations.search}" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm btn-refresh" title="بارگذاری مجدد">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="right-tools">
+                    <span class="text-muted small" id="rowCount">${this.config.translations.loading}</span>
+                    <div class="btn-columns-settings">
+                        <button class="btn btn-outline-secondary btn-sm btn-columns-toggle">
+                            <i class="bi bi-layout-three-columns"></i> ${this.config.translations.showColumns}
+                        </button>
+                        <div class="columns-dropdown" id="columnsDropdown">
+                            <div class="fw-bold small mb-2">${this.config.translations.showColumns}</div>
+                            ${this.config.columns.map(col => `
+                                <div class="form-check">
+                                    <input class="form-check-input column-toggle" type="checkbox" 
+                                           value="${col.field}" 
+                                           id="col_${col.field}"
+                                           ${this.state.visibleColumns.includes(col.field) ? 'checked' : ''} />
+                                    <label class="form-check-label" for="col_${col.field}">
+                                        ${col.title}
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول -->
+            <div class="datatable-container" style="position:relative;">
+                <div class="datatable-loading hidden">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">${this.config.translations.loading}</span>
+                    </div>
+                </div>
+                <table class="table" id="dataTable">
+                    <thead id="tableHead">
+                        <!-- داینامیک توسط JS -->
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- داینامیک توسط JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- فوتر -->
+            <div class="datatable-footer">
+                <div class="aggregations" id="aggregations"></div>
+                <nav>
+                    <ul class="pagination pagination-sm" id="pagination"></ul>
+                </nav>
+            </div>
+        `;
+
+        // رندر هدر و بدنه
+        this.renderHeader();
+        this.renderBody();
+    }
+
+    // ============================================================
+    //  رندر هدر جدول
+    // ============================================================
+    renderHeader() {
+        const thead = document.getElementById('tableHead');
+        if (!thead) return;
+
+        const visibleCols = this.getVisibleColumns();
+        const headerRow = document.createElement('tr');
+
+        // ستون + (Expand)
+        const expandTh = document.createElement('th');
+        expandTh.style.width = '40px';
+        expandTh.style.textAlign = 'center';
+        expandTh.innerHTML = `<span class="text-muted small">#</span>`;
+        headerRow.appendChild(expandTh);
+
+        // ستون‌ها
+        visibleCols.forEach(field => {
+            const colConfig = this.config.columns.find(c => c.field === field);
+            if (!colConfig) return;
+
+            const th = document.createElement('th');
+            th.dataset.field = field;
+            th.className = 'draggable';
+            th.draggable = true;
+
+            // محتوای هدر
+            let headerContent = `
+                <div class="header-content">
+                    <span>${colConfig.title}</span>
+            `;
+            
+            // آیکون مرتب‌سازی
+            if (colConfig.sortable !== false) {
+                const sortIcon = this.state.sortField === field ? 
+                    (this.state.sortDirection === 'asc' ? 'bi-sort-up' : 'bi-sort-down') : 
+                    'bi-sort';
+                headerContent += `<span class="sort-icon ${this.state.sortField === field ? 'active' : ''}" data-field="${field}">
+                    <i class="bi ${sortIcon}"></i>
+                </span>`;
+            }
+            headerContent += `</div>`;
+
+            // باکس جستجوی ستون
+            if (colConfig.searchable !== false) {
+                const inputType = colConfig.type === 'date' ? 'date' : 'text';
+                const value = this.state.columnFilters[field] || '';
+                headerContent += `
+                    <div class="column-search">
+                        <input type="${inputType}" class="column-search-input" 
+                               data-field="${field}" value="${value}" 
+                               placeholder="جستجو..." />
+                    </div>
+                `;
+            }
+
+            th.innerHTML = headerContent;
+            headerRow.appendChild(th);
+        });
+
+        thead.innerHTML = '';
+        thead.appendChild(headerRow);
+
+        // تنظیم رویدادهای درگ برای جابجایی ستون‌ها
+        this.setupDragDrop();
+    }
+
+    // ============================================================
+    //  رندر بدنه جدول
+    // ============================================================
+    renderBody() {
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+
+        const data = this.getCurrentPageData();
+        const visibleCols = this.getVisibleColumns();
+
+        if (data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="${visibleCols.length + 2}" class="datatable-empty">
+                        <i class="bi bi-inbox"></i>
+                        ${this.config.translations.noData}
+                    </td>
+                </tr>
+            `;
+            this.updatePagination();
+            this.updateAggregations();
+            return;
+        }
+
+        let html = '';
+        data.forEach((row, index) => {
+            const rowId = row[this.config.primaryKey];
+            const isExpanded = this.state.expandedRows.has(rowId);
+            
+            html += `<tr class="${isExpanded ? 'row-expanded' : ''}" data-id="${rowId}">`;
+            
+            // ستون + (Expand)
+            html += `
+                <td style="text-align:center;vertical-align:middle;">
+                    <button class="btn-expand-row ${isExpanded ? 'expanded' : ''}" 
+                            data-id="${rowId}" title="${this.config.translations.expand}">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </button>
+                </td>
+            `;
+
+            // ستون‌های داده
+            visibleCols.forEach(field => {
+                const colConfig = this.config.columns.find(c => c.field === field);
+                let value = row[field];
+                
+                // رندر سفارشی
+                if (this.config.cellRenderers[field]) {
+                    value = this.config.cellRenderers[field](value, row);
+                } else if (colConfig?.type === 'date' && value) {
+                    value = new Date(value).toLocaleDateString('fa-IR');
+                } else if (colConfig?.type === 'number' && value !== undefined && value !== null) {
+                    value = new Intl.NumberFormat('fa-IR').format(value);
+                } else if (value === null || value === undefined) {
+                    value = '-';
+                }
+
+                html += `<td>${value}</td>`;
+            });
+
+            html += `</tr>`;
+
+            // ردیف جزئیات (آکاردیون)
+            if (isExpanded) {
+                const detailData = this.state.detailData[rowId] || null;
+                html += `
+                    <tr class="row-detail show" data-parent-id="${rowId}">
+                        <td colspan="${visibleCols.length + 2}">
+                            <div class="detail-content">
+                                ${detailData ? this.renderDetailContent(detailData, row) : `
+                                    <div class="detail-loading">
+                                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                        ${this.config.translations.loading}
+                                    </div>
+                                `}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+
+        tbody.innerHTML = html;
+        this.updatePagination();
+        this.updateAggregations();
+        this.updateRowCount();
+    }
+
+    // ============================================================
+    //  رندر محتوای جزئیات
+    // ============================================================
+    renderDetailContent(data, row) {
+        if (this.config.detailRenderer) {
+            return this.config.detailRenderer(data, row);
+        }
+        // رندر پیش‌فرض
+        let html = `<div class="border p-3 rounded bg-white">`;
+        html += `<h6 class="mb-3">اطلاعات تکمیلی</h6>`;
+        html += `<div class="row">`;
+        for (const [key, value] of Object.entries(data)) {
+            html += `
+                <div class="col-md-6 mb-2">
+                    <strong>${key}:</strong> ${value || '-'}
+                </div>
+            `;
+        }
+        html += `</div>`;
+        
+        // فرم ویرایش نمونه
+        html += `
+            <hr />
+            <h6 class="mb-3">ویرایش</h6>
+            <form class="detail-edit-form">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label small">نام</label>
+                        <input type="text" class="form-control form-control-sm" name="name" value="${data.name || ''}" />
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label small">توضیحات</label>
+                        <input type="text" class="form-control form-control-sm" name="description" value="${data.description || ''}" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm mt-2">ذخیره</button>
+                <button type="button" class="btn btn-secondary btn-sm mt-2 close-detail" data-id="${row[this.config.primaryKey]}">بستن</button>
+            </form>
+        `;
+        html += `</div>`;
+        return html;
+    }
+
+    // ============================================================
+    //  دریافت داده از سرور (جنگو)
+    // ============================================================
+    async loadData() {
+        this.setLoading(true);
+        try {
+            // ساخت پارامترهای درخواست
+            const params = new URLSearchParams();
+            params.append('page', this.state.currentPage);
+            params.append('page_size', this.config.pageSize);
+            
+            if (this.state.globalSearch) {
+                params.append('search', this.state.globalSearch);
+            }
+            
+            // فیلترهای ستون‌ها
+            for (const [field, value] of Object.entries(this.state.columnFilters)) {
+                if (value) {
+                    params.append(`filter_${field}`, value);
+                }
+            }
+            
+            // مرتب‌سازی
+            if (this.state.sortField) {
+                params.append('sort', this.state.sortField);
+                params.append('order', this.state.sortDirection);
+            }
+
+            // درخواست به API جنگو
+            const response = await fetch(`${this.config.apiUrl}?${params.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+
+            if (!response.ok) throw new Error('خطا در دریافت داده');
+
+            const result = await response.json();
+            
+            // ساختار پاسخ جنگو با Paginator
+            this.state.data = result.results || result.data || [];
+            this.state.totalRows = result.count || result.total || this.state.data.length;
+            this.state.totalPages = Math.ceil(this.state.totalRows / this.config.pageSize);
+            
+            // اعمال فیلترهای اضافی در سمت کلاینت (در صورت نیاز)
+            this.state.filteredData = this.state.data;
+            
+        } catch (error) {
+            console.error('Error loading data:', error);
+            this.state.data = [];
+            this.state.filteredData = [];
+            this.state.totalRows = 0;
+            this.state.totalPages = 0;
+            
+            // در صورت خطا، از داده‌های Mock استفاده کن (برای تست)
+            this.state.data = this.getMockData();
+            this.state.filteredData = this.state.data;
+            this.state.totalRows = this.state.data.length;
+            this.state.totalPages = Math.ceil(this.state.totalRows / this.config.pageSize);
+        }
+
+        this.setLoading(false);
+        this.renderBody();
+    }
+
+    // ============================================================
+    //  داده‌های Mock برای تست (در صورت عدم وجود API)
+    // ============================================================
+    getMockData() {
+        const data = [];
+        const categories = ['محصولات', 'خدمات', 'فروش', 'پشتیبانی'];
+        const statuses = ['فعال', 'غیرفعال', 'در انتظار'];
+        
+        for (let i = 1; i <= 45; i++) {
+            data.push({
+                id: i,
+                name: `مورد شماره ${i}`,
+                category: categories[i % categories.length],
+                price: 100000 + (i * 15000),
+                quantity: Math.floor(Math.random() * 100) + 1,
+                status: statuses[i % statuses.length],
+                created_at: new Date(2024, 0, i % 28 + 1).toISOString().split('T')[0],
+                description: `توضیحات مربوط به مورد شماره ${i}`
+            });
+        }
+        return data;
+    }
+
+    // ============================================================
+    //  عملیات روی داده‌ها
+    // ============================================================
+    getVisibleColumns() {
+        return this.state.columnOrder.filter(f => this.state.visibleColumns.includes(f));
+    }
+
+    getCurrentPageData() {
+        const start = (this.state.currentPage - 1) * this.config.pageSize;
+        const end = start + this.config.pageSize;
+        return this.state.filteredData.slice(start, end);
+    }
+
+    // ============================================================
+    //  به‌روزرسانی صفحه‌بندی
+    // ============================================================
+    updatePagination() {
+        const pagination = document.getElementById('pagination');
+        if (!pagination) return;
+
+        const totalPages = this.state.totalPages;
+        const currentPage = this.state.currentPage;
+
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        // Previous
+        html += `<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}">«</a>
+        </li>`;
+
+        // Pages
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+        
+        if (startPage > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+            if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>`;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+
+        // Next
+        html += `<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}">»</a>
+        </li>`;
+
+        pagination.innerHTML = html;
+    }
+
+    // ============================================================
+    //  به‌روزرسانی عملیات تجمیعی
+    // ============================================================
+    updateAggregations() {
+        const container = document.getElementById('aggregations');
+        if (!container) return;
+
+        const data = this.state.filteredData;
+        if (data.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        const numericFields = this.config.columns
+            .filter(c => c.type === 'number' && c.aggregate !== false)
+            .map(c => c.field);
+
+        if (numericFields.length === 0) {
+            container.innerHTML = `<span class="aggregation-item">${data.length} ${this.config.translations.rows}</span>`;
+            return;
+        }
+
+        numericFields.forEach(field => {
+            const values = data.map(row => parseFloat(row[field])).filter(v => !isNaN(v));
+            if (values.length === 0) return;
+
+            const sum = values.reduce((a, b) => a + b, 0);
+            const avg = sum / values.length;
+            const count = values.length;
+
+            html += `
+                <span class="aggregation-item">
+                    <strong>${this.config.columns.find(c => c.field === field)?.title}:</strong>
+                    ${this.config.translations.count} ${count} | 
+                    ${this.config.translations.sum} ${new Intl.NumberFormat('fa-IR').format(sum)} | 
+                    ${this.config.translations.avg} ${new Intl.NumberFormat('fa-IR').format(avg.toFixed(2))}
+                </span>
+            `;
+        });
+
+        container.innerHTML = html || `<span class="aggregation-item">${data.length} ${this.config.translations.rows}</span>`;
+    }
+
+    // ============================================================
+    //  به‌روزرسانی تعداد ردیف‌ها
+    // ============================================================
+    updateRowCount() {
+        const el = document.getElementById('rowCount');
+        if (!el) return;
+        const start = (this.state.currentPage - 1) * this.config.pageSize + 1;
+        const end = Math.min(start + this.config.pageSize - 1, this.state.totalRows);
+        el.textContent = `${this.config.translations.showing} ${start} - ${end} ${this.config.translations.of} ${this.state.totalRows} ${this.config.translations.rows}`;
+    }
+
+    // ============================================================
+    //  کنترل لودینگ
+    // ============================================================
+    setLoading(state) {
+        this.state.loading = state;
+        const loader = this.container.querySelector('.datatable-loading');
+        if (loader) {
+            loader.classList.toggle('hidden', !state);
+        }
+    }
+
+    // ============================================================
+    //  جابجایی ستون‌ها (Drag & Drop)
+    // ============================================================
+    setupDragDrop() {
+        const thead = document.getElementById('tableHead');
+        if (!thead) return;
+
+        let dragSource = null;
+
+        thead.querySelectorAll('th.draggable').forEach(th => {
+            th.addEventListener('dragstart', (e) => {
+                dragSource = th;
+                th.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', th.dataset.field);
+            });
+
+            th.addEventListener('dragend', () => {
+                th.classList.remove('dragging');
+                thead.querySelectorAll('th.drag-over').forEach(el => el.classList.remove('drag-over'));
+            });
+
+            th.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                th.classList.add('drag-over');
+            });
+
+            th.addEventListener('dragleave', () => {
+                th.classList.remove('drag-over');
+            });
+
+            th.addEventListener('drop', (e) => {
+                e.preventDefault();
+                th.classList.remove('drag-over');
+                
+                const sourceField = e.dataTransfer.getData('text/plain');
+                const targetField = th.dataset.field;
+                
+                if (sourceField && targetField && sourceField !== targetField) {
+                    this.moveColumn(sourceField, targetField);
+                }
+            });
+        });
+    }
+
+    moveColumn(sourceField, targetField) {
+        const order = this.state.columnOrder;
+        const sourceIndex = order.indexOf(sourceField);
+        const targetIndex = order.indexOf(targetField);
+        
+        if (sourceIndex === -1 || targetIndex === -1) return;
+        
+        order.splice(sourceIndex, 1);
+        order.splice(targetIndex, 0, sourceField);
+        
+        this.state.columnOrder = order;
+        this.renderHeader();
+        this.renderBody();
+        
+        // ذخیره در localStorage
+        this.saveConfig();
+    }
+
+    // ============================================================
+    //  ذخیره و بازیابی کانفیگ در localStorage
+    // ============================================================
+    saveConfig() {
+        const config = {
+            visibleColumns: this.state.visibleColumns,
+            columnOrder: this.state.columnOrder
+        };
+        try {
+            localStorage.setItem('datatable_config', JSON.stringify(config));
+        } catch (e) {}
+    }
+
+    loadConfig() {
+        try {
+            const saved = localStorage.getItem('datatable_config');
+            if (saved) {
+                const config = JSON.parse(saved);
+                this.state.visibleColumns = config.visibleColumns || this.state.visibleColumns;
+                this.state.columnOrder = config.columnOrder || this.state.columnOrder;
+            }
+        } catch (e) {}
+    }
+
+    // ============================================================
+    //  رویدادها
+    // ============================================================
+    setupEventListeners() {
+        // جستجوی سراسری
+        const globalSearch = this.container.querySelector('.global-search-input');
+        if (globalSearch) {
+            let timeout = null;
+            globalSearch.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    this.state.globalSearch = globalSearch.value;
+                    this.state.currentPage = 1;
+                    this.loadData();
+                }, 400);
+            });
+        }
+
+        // جستجوی ستون‌ها
+        this.container.querySelectorAll('.column-search-input').forEach(input => {
+            let timeout = null;
+            input.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    const field = input.dataset.field;
+                    this.state.columnFilters[field] = input.value;
+                    this.state.currentPage = 1;
+                    this.loadData();
+                }, 400);
+            });
+        });
+
+        // مرتب‌سازی
+        this.container.querySelectorAll('.sort-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const field = icon.dataset.field;
+                if (this.state.sortField === field) {
+                    this.state.sortDirection = this.state.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.state.sortField = field;
+                    this.state.sortDirection = 'asc';
+                }
+                this.loadData();
+            });
+        });
+
+        // صفحه‌بندی
+        this.container.querySelector('#pagination')?.addEventListener('click', (e) => {
+            const link = e.target.closest('.page-link');
+            if (!link || link.parentElement.classList.contains('disabled')) return;
+            e.preventDefault();
+            const page = parseInt(link.dataset.page);
+            if (page && page !== this.state.currentPage) {
+                this.state.currentPage = page;
+                this.loadData();
+            }
+        });
+
+        // دکمه تنظیمات ستون‌ها
+        const toggleBtn = this.container.querySelector('.btn-columns-toggle');
+        const dropdown = this.container.querySelector('.columns-dropdown');
+        if (toggleBtn && dropdown) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!toggleBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // تغییر visibility ستون‌ها
+        this.container.querySelectorAll('.column-toggle').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const field = checkbox.value;
+                if (checkbox.checked) {
+                    if (!this.state.visibleColumns.includes(field)) {
+                        this.state.visibleColumns.push(field);
+                    }
+                } else {
+                    this.state.visibleColumns = this.state.visibleColumns.filter(f => f !== field);
+                }
+                this.saveConfig();
+                this.renderHeader();
+                this.renderBody();
+            });
+        });
+
+        // دکمه باز کردن جزئیات ردیف (Event Delegation)
+        this.container.querySelector('#tableBody')?.addEventListener('click', async (e) => {
+            const expandBtn = e.target.closest('.btn-expand-row');
+            if (expandBtn) {
+                e.preventDefault();
+                const rowId = parseInt(expandBtn.dataset.id);
+                await this.toggleRowDetail(rowId);
+                return;
+            }
+
+            // دکمه بستن جزئیات
+            const closeBtn = e.target.closest('.close-detail');
+            if (closeBtn) {
+                const rowId = parseInt(closeBtn.dataset.id);
+                this.toggleRowDetail(rowId);
+                return;
+            }
+
+            // ارسال فرم ویرایش
+            const form = e.target.closest('.detail-edit-form');
+            if (form) {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                const rowId = parseInt(form.closest('.row-detail')?.dataset.parentId);
+                if (rowId) {
+                    await this.saveDetail(rowId, data);
+                }
+            }
+        });
+
+        // دکمه Refresh
+        this.container.querySelector('.btn-refresh')?.addEventListener('click', () => {
+            this.loadData();
+        });
+    }
+
+    // ============================================================
+    //  مدیریت جزئیات ردیف
+    // ============================================================
+    async toggleRowDetail(rowId) {
+        if (this.state.expandedRows.has(rowId)) {
+            this.state.expandedRows.delete(rowId);
+            delete this.state.detailData[rowId];
+            this.renderBody();
+            return;
+        }
+
+        this.state.expandedRows.add(rowId);
+        
+        // اگر داده جزئیات وجود ندارد، از سرور دریافت کن
+        if (!this.state.detailData[rowId]) {
+            try {
+                console.log(`${this.config.detailApiUrl}/${rowId}/detail`)
+                
+                const response = await fetch(`${this.config.detailApiUrl}/${rowId}/detail/`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    this.state.detailData[rowId] = data;
+                } else {
+                    // داده‌های Mock برای تست
+                    this.state.detailData[rowId] = {
+                        detal: `جزیات یافت نشد`,
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading detail:', error);
+                this.state.detailData[rowId] = {
+                    name: `جزئیات ردیف ${rowId}`,
+                    description: `خطا در دریافت اطلاعات`,
+                };
+            }
+        }
+
+        this.renderBody();
+    }
+
+    async saveDetail(rowId, data) {
+        try {
+            const response = await fetch(`${this.config.apiUrl}${rowId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                alert('اطلاعات با موفقیت ذخیره شد');
+                this.state.expandedRows.delete(rowId);
+                delete this.state.detailData[rowId];
+                this.loadData();
+            } else {
+                alert('خطا در ذخیره اطلاعات');
+            }
+        } catch (error) {
+            console.error('Error saving detail:', error);
+            alert('خطا در ذخیره اطلاعات');
+        }
+    }
+
+    // ============================================================
+    //  متدهای عمومی برای استفاده خارجی
+    // ============================================================
+    refresh() {
+        this.loadData();
+    }
+
+    setPage(page) {
+        this.state.currentPage = page;
+        this.loadData();
+    }
+
+    setGlobalSearch(query) {
+        this.state.globalSearch = query;
+        this.state.currentPage = 1;
+        this.loadData();
+    }
+
+    getData() {
+        return this.state.filteredData;
+    }
+
+    getSelectedData() {
+        // بازگرداندن داده‌های صفحه فعلی
+        return this.getCurrentPageData();
+    }
+}
+
+// ================================================================
+//  نمونه استفاده
+// ================================================================
+document.addEventListener('DOMContentLoaded', function() {
+    const table = new DataTable({
+        container: '#myDataTable',
+        apiUrl: '/capital/api/my-capital/',  // آدرس API جنگو
+        primaryKey: 'id',
+        pageSize: 10,
+        
+        // تعریف ستون‌ها
+        columns: [
+            { field: 'id', title: 'شناسه', type: 'number', sortable: true, searchable: true, visible: true },
+            { field: 'asset__title', title: 'دارایی', type: 'string', sortable: true, searchable: true, visible: true },
+            { field: 'quantity', title: 'تعداد', type: 'string', sortable: true, searchable: true, visible: true },
+            { field: 'price_sar_be_sar', title: 'قیمت سر به سر', type: 'number', sortable: true, searchable: true, visible: true, aggregate: true },
+            { field: 'price_buy', title: 'قیمت خرید', type: 'number', sortable: true, searchable: true, visible: true, aggregate: true },
+            { field: 'created_at', title: 'تاریخ ایجاد', type: 'date', sortable: true, searchable: true, visible: true },
+            { field: 'description', title: 'توضیحات', type: 'string', sortable: false, searchable: true, visible: false },
+        ],
+        
+        // ستون‌های قابل مشاهده در ابتدا
+        visibleColumns: ['id', 'asset__title', 'quantity', 'price_sar_be_sar', 'price_buy', 'created_at', 'description'],
+        
+        // ترتیب ستون‌ها
+        columnOrder: ['id', 'asset__title', 'quantity', 'price_sar_be_sar', 'price_buy', 'created_at', 'description'],
+        
+        // رندرهای سفارشی
+        cellRenderers: {
+            price: (value) => {
+                return value ? `${new Intl.NumberFormat('fa-IR').format(value)} تومان` : '-';
+            },
+            status: (value) => {
+                const colors = {
+                    'فعال': 'success',
+                    'غیرفعال': 'danger',
+                    'در انتظار': 'warning'
+                };
+                return `<span class="badge bg-${colors[value] || 'secondary'}">${value || '-'}</span>`;
+            },
+            created_at: (value) => {
+                if (!value) return '-';
+                return new Date(value).toLocaleDateString('fa-IR');
+            }
+        },
+        
+        // آدرس API برای دریافت جزئیات
+        detailApiUrl: 'api/my-capital',
+        
+        // عملیات تجمیعی
+        aggregations: ['sum', 'avg', 'count'],
+        
+        // رندر سفارشی جزئیات
+        detailRenderer: (data, row) => {
+            let html = `
+                <div class="border p-3 rounded bg-white">
+                    <h6 class="mb-3">📋 اطلاعات تکمیلی - ${data.name}</h6>
+                    <div class="row">
+            `;
+            for (const [key, value] of Object.entries(data)) {
+                html += `
+                    <div class="col-md-6 mb-2">
+                        <strong>${key}:</strong> ${value || '-'}
+                    </div>
+                `;
+            }
+            html += `
+                    </div>
+                    <hr />
+                    <div class="mt-2">
+                        <button class="btn btn-primary btn-sm" onclick="alert('ویرایش ردیف ${row.id}')">
+                            <i class="bi bi-pencil"></i> ویرایش
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="if(confirm('آیا مطمئن هستید؟')) alert('حذف ردیف ${row.id}')">
+                            <i class="bi bi-trash"></i> حذف
+                        </button>
+                        <button class="btn btn-secondary btn-sm close-detail" data-id="${row.id}">
+                            <i class="bi bi-x-circle"></i> بستن
+                        </button>
+                    </div>
+                </div>
+            `;
+            return html;
+        },
+        
+        translations: {
+            search: 'جستجو در همه ستون‌ها...',
+            noData: 'داده‌ای برای نمایش وجود ندارد',
+            loading: 'در حال بارگذاری...',
+            showing: 'نمایش',
+            of: 'از',
+            rows: 'ردیف',
+            allColumns: 'همه ستون‌ها',
+            showColumns: 'تنظیمات ستون‌ها',
+            sum: 'جمع',
+            avg: 'میانگین',
+            count: 'تعداد',
+            expand: 'باز کردن',
+            collapse: 'بستن'
+        }
+    });
+
+    // ذخیره در window برای دسترسی از کنسول
+    window.dataTable = table;
+});
+</script>
+
+</body>
+</html>

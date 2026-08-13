@@ -37,10 +37,12 @@ class BaseModel(models.Model):
                     if hasattr(obj, 'is_deleted'):
                         obj.delete()
 
-    def jcreated_date(self):
+    @property
+    def jcreated_at(self):
         return 'return jalali created date...'
 
-    def jupdate_date(self):
+    @property
+    def jupdate_at(self):
         return 'return jalali update date...'
     
 

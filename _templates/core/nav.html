@@ -1,0 +1,536 @@
+
+    <style>
+        /* استایل‌های عمومی */
+        body {
+            padding-top: 70px;
+            padding-bottom: 80px;
+            background-color: #f8f9fa;
+        }
+
+        /* Navbar بالایی (دسکتاپ) */
+        .navbar-top {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Navbar پایینی (موبایل) */
+        .navbar-bottom {
+            background-color: #ffffff;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            border-top: 1px solid #e9ecef;
+        }
+
+        /* حالت موبایل - navbar بالایی مخفی، پایینی نمایش */
+        @media (max-width: 991.98px) {
+            .navbar-top {
+                display: none !important;
+            }
+            .navbar-bottom {
+                display: flex !important;
+            }
+            body {
+                padding-top: 20px;
+                padding-bottom: 80px;
+            }
+            /* مخفی کردن جستجو در موبایل */
+            .search-desktop {
+                display: none !important;
+            }
+        }
+
+        /* حالت دسکتاپ - navbar پایینی مخفی */
+        @media (min-width: 992px) {
+            .navbar-bottom {
+                display: none !important;
+            }
+            body {
+                padding-top: 70px;
+                padding-bottom: 20px;
+            }
+            .search-mobile {
+                display: none !important;
+            }
+        }
+
+        /* استایل آیتم‌های منوی پایینی */
+        .navbar-bottom .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            padding: 6px 8px;
+            color: #6c757d;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .navbar-bottom .nav-link i {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+        }
+
+        .navbar-bottom .nav-link.active {
+            color: #0d6efd;
+        }
+
+        .navbar-bottom .nav-link:hover {
+            color: #0d6efd;
+        }
+
+        .navbar-bottom .container-fluid {
+            padding: 0 12px;
+        }
+
+        .navbar-bottom .navbar-nav {
+            width: 100%;
+            justify-content: space-around;
+        }
+
+        /* استایل جستجوی موبایل - آیکون جداگانه */
+        .search-mobile .nav-link i {
+            font-size: 1.4rem;
+        }
+
+        /* کانتینر نتایج جستجو */
+        .search-results-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 9999;
+            display: none;
+            margin-top: 4px;
+        }
+
+        .search-results-dropdown.show {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f3f5;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-result-item .title {
+            font-weight: 500;
+            color: #212529;
+        }
+
+        .search-result-item .description {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .search-result-item .badge-category {
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+
+        .search-loading {
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .search-no-result {
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        /* دکمه همبرگر */
+        .navbar-toggler {
+            border: none;
+        }
+
+        /* استایل فرم جستجوی دسکتاپ */
+        .search-desktop .input-group {
+            min-width: 300px;
+        }
+
+        .search-desktop .search-results-dropdown {
+            top: calc(100% + 8px);
+        }
+
+        /* Badge تعداد نتایج */
+        .result-count {
+            font-size: 0.75rem;
+            color: #6c757d;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+    </style>
+
+
+    <!-- ========== NAVBAR بالایی (دسکتاپ) ========== -->
+    <nav class="navbar navbar-expand-lg navbar-top fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="bi bi-house-fill text-primary me-2"></i> capital
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarDesktop"
+                    aria-controls="navbarDesktop" aria-expanded="false" aria-label="تغییر ناوبری">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarDesktop">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">دارایی من</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">دارایی جدید</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">پروفایل</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="#">درباره ما</a>
+                    </li> -->
+                </ul>
+                <!-- جستجوی دسکتاپ -->
+                <div class="search-desktop">
+                    <div class="search-container">
+                        <div class="input-group">
+                            <input type="text" class="form-control search-input" placeholder="جستجو..." aria-label="جستجو">
+                            <button class="btn btn-outline-primary search-btn" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <div class="search-results-dropdown"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== NAVBAR پایینی (موبایل - شبیه اپلیکیشن) ========== -->
+    <nav class="navbar navbar-bottom fixed-bottom">
+        <div class="container-fluid">
+            <!-- <a class="navbar-brand d-lg-none" href="#">
+                <i class="bi bi-house-fill text-primary"></i> capital
+            </a> -->
+            <ul class="navbar-nav flex-row">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <i class="bi bi-house-fill"></i>
+                        <span>capital</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>دارایی من</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>دارایی جدید</span>
+                    </a>
+                </li>
+
+                <!-- آیتم جستجو در موبایل (با مودال یا صفحه جدا) -->
+                <li class="nav-item search-mobile">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#searchModal">
+                        <i class="bi bi-search"></i>
+                        <span>جستجو</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-person-fill"></i>
+                        <span>پروفایل</span>
+                    </a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>تنظیمات</span>
+                    </a>
+                </li> -->
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ========== مودال جستجو برای موبایل ========== -->
+    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="searchModalLabel">
+                        <i class="bi bi-search text-primary me-2"></i>جستجو
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="search-container-mobile">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control form-control-lg search-input-mobile" 
+                                   placeholder="عبارت مورد نظر را وارد کنید..." autofocus>
+                            <button class="btn btn-primary search-btn-mobile" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <div class="search-results-dropdown-mobile" style="position:static;max-height:60vh;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  داده‌های نمونه (شبیه‌سازی پاسخ سرور)
+        // ============================================================
+        const mockData = [
+            { id: 1, title: 'محصولات دیجیتال', description: 'لپ‌تاپ، گوشی، تبلت و لوازم جانبی', category: 'محصولات' },
+            { id: 2, title: 'خدمات مشاوره', description: 'مشاوره کسب و کار و استراتژی', category: 'خدمات' },
+            { id: 3, title: 'محصولات خانگی', description: 'لوازم آشپزخانه، دکوراسیون', category: 'محصولات' },
+            { id: 4, title: 'خدمات آموزشی', description: 'دوره‌های آنلاین و آموزش خصوصی', category: 'خدمات' },
+            { id: 5, title: 'محصولات ورزشی', description: 'تجهیزات بدنسازی، لباس ورزشی', category: 'محصولات' },
+            { id: 6, title: 'خدمات فنی', description: 'تعمیرات کامپیوتر و موبایل', category: 'خدمات' },
+            { id: 7, title: 'محصولات آرایشی', description: 'مراقبت پوست و آرایش', category: 'محصولات' },
+            { id: 8, title: 'خدمات حقوقی', description: 'مشاوره حقوقی و وکالت', category: 'خدمات' },
+            { id: 9, title: 'محصولات کودک', description: 'اسباب‌بازی، پوشاک کودک', category: 'محصولات' },
+            { id: 10, title: 'خدمات مالی', description: 'حسابداری و مشاوره مالی', category: 'خدمات' },
+        ];
+
+        // ============================================================
+        //  تابع جستجو (شبیه‌سازی درخواست به سرور)
+        // ============================================================
+        function searchData(query) {
+            return new Promise((resolve) => {
+                // شبیه‌سازی تاخیر شبکه (200-500ms)
+                const delay = 200 + Math.random() * 300;
+                setTimeout(() => {
+                    if (!query || query.trim().length === 0) {
+                        resolve([]);
+                        return;
+                    }
+                    const q = query.trim().toLowerCase();
+                    const results = mockData.filter(item =>
+                        item.title.toLowerCase().includes(q) ||
+                        item.description.toLowerCase().includes(q) ||
+                        item.category.toLowerCase().includes(q)
+                    );
+                    resolve(results);
+                }, delay);
+            });
+        }
+
+        // ============================================================
+        //  رندر نتایج جستجو
+        // ============================================================
+        function renderResults(container, results, query) {
+            if (!container) return;
+
+            if (!query || query.trim().length === 0) {
+                container.classList.remove('show');
+                container.innerHTML = '';
+                return;
+            }
+
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="search-no-result">
+                        <i class="bi bi-search" style="font-size:2rem;display:block;margin-bottom:8px;color:#dee2e6;"></i>
+                        <span>نتیجه‌ای برای "<strong>${query}</strong>" پیدا نشد</span>
+                    </div>
+                `;
+                container.classList.add('show');
+                return;
+            }
+
+            let html = `
+                <div class="result-count">
+                    <i class="bi bi-list-ul me-1"></i> ${results.length} نتیجه برای "<strong>${query}</strong>"
+                </div>
+            `;
+
+            results.forEach(item => {
+                const categoryColors = {
+                    'محصولات': 'primary',
+                    'خدمات': 'success',
+                    'پروفایل': 'info',
+                    'تنظیمات': 'warning'
+                };
+                const color = categoryColors[item.category] || 'secondary';
+                html += `
+                    <div class="search-result-item" data-id="${item.id}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="title">${item.title}</div>
+                                <div class="description">${item.description}</div>
+                            </div>
+                            <span class="badge-category badge bg-${color}">${item.category}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            container.classList.add('show');
+
+            // کلیک روی هر نتیجه
+            container.querySelectorAll('.search-result-item').forEach(el => {
+                el.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const item = mockData.find(d => d.id == id);
+                    if (item) {
+                        alert(`انتخاب شد: ${item.title}\n${item.description}`);
+                        // بستن نتایج
+                        container.classList.remove('show');
+                        // پاک کردن input
+                        const input = container.closest('.search-container')?.querySelector('.search-input') ||
+                                      container.closest('.search-container-mobile')?.querySelector('.search-input-mobile');
+                        if (input) input.value = '';
+                        // بستن مودال اگر در موبایل است
+                        const modal = container.closest('.modal');
+                        if (modal) {
+                            const bsModal = bootstrap.Modal.getInstance(modal);
+                            if (bsModal) bsModal.hide();
+                        }
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        //  هندلر جستجو (با Debounce)
+        // ============================================================
+        function setupSearch(inputSelector, resultsSelector, isMobile = false) {
+            const input = document.querySelector(inputSelector);
+            const container = document.querySelector(resultsSelector);
+            if (!input || !container) return;
+
+            let debounceTimer = null;
+            let currentQuery = '';
+
+            async function performSearch(query) {
+                currentQuery = query;
+                // نمایش حالت بارگذاری
+                if (query && query.trim().length > 0) {
+                    container.innerHTML = `
+                        <div class="search-loading">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                            در حال جستجو...
+                        </div>
+                    `;
+                    container.classList.add('show');
+                }
+
+                try {
+                    const results = await searchData(query);
+                    // فقط اگر query تغییر نکرده باشه
+                    if (currentQuery === query) {
+                        renderResults(container, results, query);
+                    }
+                } catch (error) {
+                    console.error('خطا در جستجو:', error);
+                    container.innerHTML = `
+                        <div class="search-no-result text-danger">
+                            <i class="bi bi-exclamation-triangle-fill" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+                            خطا در ارتباط با سرور
+                        </div>
+                    `;
+                    container.classList.add('show');
+                }
+            }
+
+            input.addEventListener('input', function(e) {
+                const query = this.value;
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    performSearch(query);
+                }, 300); // تأخیر 300ms
+            });
+
+            // کلیک روی دکمه جستجو
+            const btn = input.closest('.input-group')?.querySelector('.search-btn, .search-btn-mobile');
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    const query = input.value;
+                    if (query && query.trim().length > 0) {
+                        performSearch(query);
+                    }
+                });
+            }
+
+            // بستن نتایج با کلیک خارج
+            document.addEventListener('click', function(e) {
+                const searchArea = input.closest('.search-container') || input.closest('.search-container-mobile');
+                if (searchArea && !searchArea.contains(e.target)) {
+                    container.classList.remove('show');
+                }
+            });
+
+            // بستن با کلید ESC
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    container.classList.remove('show');
+                    this.blur();
+                }
+            });
+
+            // وقتی input فوکوس می‌گیره و متنی داره، نتایج رو نشون بده
+            input.addEventListener('focus', function() {
+                if (this.value && this.value.trim().length > 0) {
+                    performSearch(this.value);
+                }
+            });
+        }
+
+        // ============================================================
+        //  راه‌اندازی جستجو در دسکتاپ و موبایل
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // جستجوی دسکتاپ
+            setupSearch('.search-desktop .search-input', '.search-desktop .search-results-dropdown', false);
+
+            // جستجوی موبایل (در مودال)
+            setupSearch('.search-input-mobile', '.search-results-dropdown-mobile', true);
+
+            // وقتی مودال بسته می‌شود، نتایج را پاک کن
+            const modal = document.getElementById('searchModal');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', function() {
+                    const input = this.querySelector('.search-input-mobile');
+                    const container = this.querySelector('.search-results-dropdown-mobile');
+                    if (input) input.value = '';
+                    if (container) {
+                        container.classList.remove('show');
+                        container.innerHTML = '';
+                    }
+                });
+
+                // وقتی مودال باز می‌شود، روی input فوکوس کن
+                modal.addEventListener('shown.bs.modal', function() {
+                    const input = this.querySelector('.search-input-mobile');
+                    if (input) setTimeout(() => input.focus(), 100);
+                });
+            }
+        });
+    </script>

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",  # needed for logout/blacklist
     "aaa",
     "core",
+    "capital",
 ]
 
 MIDDLEWARE = [
@@ -184,5 +185,5 @@ AAA = {
     },
 }
 
-MAX_NUMBER_LENGTH = 25
-DECIMAL_POINT = 8
+MAX_DIGITS = 25
+DECIMAL_PLACES = 8
